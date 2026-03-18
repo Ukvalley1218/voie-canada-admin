@@ -18,12 +18,14 @@ const SettingsPage = () => {
       secondaryCTA: { text: '', link: '' }
     },
     trustStats: [],
+    processSteps: [],
     differentiator: {
       title: '',
       headline: '',
       description: '',
       points: []
     },
+    faqs: [],
     contact: {
       email: '',
       phone: '',
@@ -108,7 +110,9 @@ const SettingsPage = () => {
   const tabs = [
     { id: 'hero', label: 'Hero Section' },
     { id: 'trust', label: 'Trust Stats' },
+    { id: 'process', label: 'Process Steps' },
     { id: 'differentiator', label: 'Why Choose Us' },
+    { id: 'faqs', label: 'FAQs' },
     { id: 'contact', label: 'Contact Info' },
     { id: 'social', label: 'Social Links' },
     { id: 'cta', label: 'CTA Section' },
@@ -283,6 +287,172 @@ const SettingsPage = () => {
                   className="text-primary-blue hover:text-blue-700"
                 >
                   + Add Stat
+                </button>
+              </div>
+            )}
+
+            {/* Process Steps */}
+            {activeTab === 'process' && (
+              <div className="space-y-4">
+                <h2 className="text-lg font-heading font-semibold mb-4">How It Works - Process Steps</h2>
+                <p className="text-text-muted text-sm mb-4">Define the steps in your client journey process.</p>
+
+                {(settings.processSteps || []).map((step, index) => (
+                  <div key={index} className="bg-secondary-gray rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-medium text-text-dark">Step {step.number || index + 1}</span>
+                      <button
+                        onClick={() => {
+                          const newSteps = settings.processSteps.filter((_, i) => i !== index);
+                          handleInputChange('processSteps', newSteps);
+                        }}
+                        className="text-red-500 hover:text-red-700 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="label-admin">Step Number</label>
+                        <input
+                          type="number"
+                          value={step.number || index + 1}
+                          onChange={(e) => {
+                            const newSteps = [...settings.processSteps];
+                            newSteps[index] = { ...newSteps[index], number: parseInt(e.target.value) || index + 1 };
+                            handleInputChange('processSteps', newSteps);
+                          }}
+                          className="input-admin"
+                          min="1"
+                        />
+                      </div>
+                      <div>
+                        <label className="label-admin">Title</label>
+                        <input
+                          type="text"
+                          value={step.title || ''}
+                          onChange={(e) => {
+                            const newSteps = [...settings.processSteps];
+                            newSteps[index] = { ...newSteps[index], title: e.target.value };
+                            handleInputChange('processSteps', newSteps);
+                          }}
+                          className="input-admin"
+                          placeholder="Free Consultation"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <label className="label-admin">Description</label>
+                      <textarea
+                        value={step.description || ''}
+                        onChange={(e) => {
+                          const newSteps = [...settings.processSteps];
+                          newSteps[index] = { ...newSteps[index], description: e.target.value };
+                          handleInputChange('processSteps', newSteps);
+                        }}
+                        className="input-admin"
+                        rows={2}
+                        placeholder="Share your goals with us..."
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={() => {
+                    const newSteps = [...(settings.processSteps || []), {
+                      number: (settings.processSteps?.length || 0) + 1,
+                      title: '',
+                      description: ''
+                    }];
+                    handleInputChange('processSteps', newSteps);
+                  }}
+                  className="text-primary-blue hover:text-blue-700"
+                >
+                  + Add Step
+                </button>
+              </div>
+            )}
+
+            {/* FAQs */}
+            {activeTab === 'faqs' && (
+              <div className="space-y-4">
+                <h2 className="text-lg font-heading font-semibold mb-4">Frequently Asked Questions</h2>
+                <p className="text-text-muted text-sm mb-4">Add common questions and answers for your visitors.</p>
+
+                {(settings.faqs || []).map((faq, index) => (
+                  <div key={index} className="bg-secondary-gray rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="font-medium text-text-dark">FAQ {index + 1}</span>
+                      <button
+                        onClick={() => {
+                          const newFaqs = settings.faqs.filter((_, i) => i !== index);
+                          handleInputChange('faqs', newFaqs);
+                        }}
+                        className="text-red-500 hover:text-red-700 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                    <div className="mb-3">
+                      <label className="label-admin">Category</label>
+                      <select
+                        value={faq.category || 'general'}
+                        onChange={(e) => {
+                          const newFaqs = [...settings.faqs];
+                          newFaqs[index] = { ...newFaqs[index], category: e.target.value };
+                          handleInputChange('faqs', newFaqs);
+                        }}
+                        className="input-admin bg-white"
+                      >
+                        <option value="general">General</option>
+                        <option value="immigration">Immigration</option>
+                        <option value="education">Education</option>
+                      </select>
+                    </div>
+                    <div className="mb-3">
+                      <label className="label-admin">Question</label>
+                      <input
+                        type="text"
+                        value={faq.question || ''}
+                        onChange={(e) => {
+                          const newFaqs = [...settings.faqs];
+                          newFaqs[index] = { ...newFaqs[index], question: e.target.value };
+                          handleInputChange('faqs', newFaqs);
+                        }}
+                        className="input-admin"
+                        placeholder="How long does the immigration process take?"
+                      />
+                    </div>
+                    <div>
+                      <label className="label-admin">Answer</label>
+                      <textarea
+                        value={faq.answer || ''}
+                        onChange={(e) => {
+                          const newFaqs = [...settings.faqs];
+                          newFaqs[index] = { ...newFaqs[index], answer: e.target.value };
+                          handleInputChange('faqs', newFaqs);
+                        }}
+                        className="input-admin"
+                        rows={3}
+                        placeholder="Processing times vary by program..."
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={() => {
+                    const newFaqs = [...(settings.faqs || []), {
+                      question: '',
+                      answer: '',
+                      category: 'general'
+                    }];
+                    handleInputChange('faqs', newFaqs);
+                  }}
+                  className="text-primary-blue hover:text-blue-700"
+                >
+                  + Add FAQ
                 </button>
               </div>
             )}
