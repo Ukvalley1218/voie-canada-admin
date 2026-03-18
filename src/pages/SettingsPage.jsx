@@ -325,7 +325,7 @@ const SettingsPage = () => {
 
             {/* Contact Info */}
             {activeTab === 'contact' && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <h2 className="text-lg font-heading font-semibold mb-4">Contact Information</h2>
                 <div>
                   <label className="label-admin">Email</label>
@@ -356,6 +356,154 @@ const SettingsPage = () => {
                     className="input-admin"
                     placeholder="+1XXXXXXXXXX"
                   />
+                </div>
+
+                {/* Offices Section */}
+                <div className="border-t pt-6 mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-heading font-semibold">Our Offices</h3>
+                    <button
+                      onClick={() => {
+                        const newOffices = [...(settings.contact?.offices || []), {
+                          country: '',
+                          city: '',
+                          address: '',
+                          phone: '',
+                          email: '',
+                          hours: '',
+                          mapLink: ''
+                        }];
+                        handleInputChange('contact.offices', newOffices);
+                      }}
+                      className="text-primary-blue hover:text-blue-700 text-sm font-medium"
+                    >
+                      + Add Office
+                    </button>
+                  </div>
+
+                  {(settings.contact?.offices || []).map((office, index) => (
+                    <div key={index} className="bg-secondary-gray rounded-lg p-4 mb-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="font-medium text-text-dark">Office {index + 1}</span>
+                        <button
+                          onClick={() => {
+                            const newOffices = settings.contact.offices.filter((_, i) => i !== index);
+                            handleInputChange('contact.offices', newOffices);
+                          }}
+                          className="text-red-500 hover:text-red-700 text-sm"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="label-admin">Country</label>
+                          <input
+                            type="text"
+                            value={office.country || ''}
+                            onChange={(e) => {
+                              const newOffices = [...settings.contact.offices];
+                              newOffices[index] = { ...newOffices[index], country: e.target.value };
+                              handleInputChange('contact.offices', newOffices);
+                            }}
+                            className="input-admin"
+                            placeholder="Canada"
+                          />
+                        </div>
+                        <div>
+                          <label className="label-admin">City</label>
+                          <input
+                            type="text"
+                            value={office.city || ''}
+                            onChange={(e) => {
+                              const newOffices = [...settings.contact.offices];
+                              newOffices[index] = { ...newOffices[index], city: e.target.value };
+                              handleInputChange('contact.offices', newOffices);
+                            }}
+                            className="input-admin"
+                            placeholder="Toronto"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <label className="label-admin">Address</label>
+                        <input
+                          type="text"
+                          value={office.address || ''}
+                          onChange={(e) => {
+                            const newOffices = [...settings.contact.offices];
+                            newOffices[index] = { ...newOffices[index], address: e.target.value };
+                            handleInputChange('contact.offices', newOffices);
+                          }}
+                          className="input-admin"
+                          placeholder="123 Main Street, Suite 400"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-3">
+                        <div>
+                          <label className="label-admin">Phone</label>
+                          <input
+                            type="text"
+                            value={office.phone || ''}
+                            onChange={(e) => {
+                              const newOffices = [...settings.contact.offices];
+                              newOffices[index] = { ...newOffices[index], phone: e.target.value };
+                              handleInputChange('contact.offices', newOffices);
+                            }}
+                            className="input-admin"
+                            placeholder="+1 (416) XXX-XXXX"
+                          />
+                        </div>
+                        <div>
+                          <label className="label-admin">Email</label>
+                          <input
+                            type="email"
+                            value={office.email || ''}
+                            onChange={(e) => {
+                              const newOffices = [...settings.contact.offices];
+                              newOffices[index] = { ...newOffices[index], email: e.target.value };
+                              handleInputChange('contact.offices', newOffices);
+                            }}
+                            className="input-admin"
+                            placeholder="toronto@voiecanada.com"
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <label className="label-admin">Working Hours</label>
+                        <input
+                          type="text"
+                          value={office.hours || ''}
+                          onChange={(e) => {
+                            const newOffices = [...settings.contact.offices];
+                            newOffices[index] = { ...newOffices[index], hours: e.target.value };
+                            handleInputChange('contact.offices', newOffices);
+                          }}
+                          className="input-admin"
+                          placeholder="Mon-Fri: 9:00 AM - 6:00 PM EST"
+                        />
+                      </div>
+                      <div className="mt-3">
+                        <label className="label-admin">Google Maps Link</label>
+                        <input
+                          type="text"
+                          value={office.mapLink || ''}
+                          onChange={(e) => {
+                            const newOffices = [...settings.contact.offices];
+                            newOffices[index] = { ...newOffices[index], mapLink: e.target.value };
+                            handleInputChange('contact.offices', newOffices);
+                          }}
+                          className="input-admin"
+                          placeholder="https://maps.google.com/?q=..."
+                        />
+                        <p className="text-xs text-text-muted mt-1">Paste a Google Maps share link or coordinates</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!settings.contact?.offices || settings.contact.offices.length === 0) && (
+                    <p className="text-text-muted text-sm">No offices added yet. Click "Add Office" to add one.</p>
+                  )}
                 </div>
               </div>
             )}
