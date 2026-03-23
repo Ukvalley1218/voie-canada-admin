@@ -136,11 +136,11 @@ const ServicesPage = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-heading font-bold text-text-dark">Services</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-xl lg:text-2xl font-heading font-bold text-text-dark">Services</h1>
         <button
           onClick={() => { resetForm(); setEditingService(null); setShowModal(true); }}
-          className="btn-admin-primary"
+          className="btn-admin-primary w-full sm:w-auto"
         >
           Add Service
         </button>
@@ -261,7 +261,7 @@ const ServicesPage = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label-admin">Category *</label>
                   <select
@@ -285,7 +285,7 @@ const ServicesPage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label-admin">Icon URL</label>
                   <input
@@ -346,11 +346,11 @@ const ServicesPage = () => {
                 <label htmlFor="isActive" className="text-sm text-text-dark">Active</label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-admin-border">
-                <button type="button" onClick={() => setShowModal(false)} className="btn-admin-secondary">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-admin-border">
+                <button type="button" onClick={() => setShowModal(false)} className="btn-admin-secondary w-full sm:w-auto">
                   Cancel
                 </button>
-                <button type="submit" className="btn-admin-primary">
+                <button type="submit" className="btn-admin-primary w-full sm:w-auto">
                   {editingService ? 'Update Service' : 'Create Service'}
                 </button>
               </div>

@@ -68,10 +68,17 @@ const InquiriesPage = () => {
     });
   };
 
+  const formatDateShort = (date) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-heading font-bold text-text-dark">Inquiries</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-xl lg:text-2xl font-heading font-bold text-text-dark">Inquiries</h1>
         <span className="text-sm text-text-muted">
           Total: {pagination.total || 0} inquiries
         </span>
@@ -79,11 +86,11 @@ const InquiriesPage = () => {
 
       {/* Filters */}
       <div className="card-admin p-4 mb-6">
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <select
             value={filter.status}
             onChange={(e) => setFilter({ ...filter, status: e.target.value, page: 1 })}
-            className="input-admin w-auto"
+            className="input-admin w-full sm:w-auto"
           >
             <option value="">All Status</option>
             <option value="new">New</option>
@@ -95,7 +102,7 @@ const InquiriesPage = () => {
           <select
             value={filter.serviceType}
             onChange={(e) => setFilter({ ...filter, serviceType: e.target.value, page: 1 })}
-            className="input-admin w-auto"
+            className="input-admin w-full sm:w-auto"
           >
             <option value="">All Services</option>
             <option value="immigration">Immigration</option>
@@ -114,64 +121,107 @@ const InquiriesPage = () => {
           <div className="p-8 text-center text-text-muted">No inquiries found</div>
         ) : (
           <>
-            <table className="table-admin">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Service Type</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inquiries.map((inquiry) => (
-                  <tr key={inquiry._id}>
-                    <td className="font-medium">{inquiry.name}</td>
-                    <td>{inquiry.email}</td>
-                    <td>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        inquiry.serviceType === 'immigration'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-purple-100 text-purple-800'
-                      }`}>
-                        {inquiry.serviceType}
-                      </span>
-                    </td>
-                    <td>
-                      <select
-                        value={inquiry.status}
-                        onChange={(e) => updateStatus(inquiry._id, e.target.value)}
-                        className={`px-2 py-1 rounded-full text-xs border-0 ${getStatusBadge(inquiry.status)}`}
-                      >
-                        <option value="new">New</option>
-                        <option value="contacted">Contacted</option>
-                        <option value="qualified">Qualified</option>
-                        <option value="closed">Closed</option>
-                      </select>
-                    </td>
-                    <td className="whitespace-nowrap">{formatDate(inquiry.createdAt)}</td>
-                    <td>
-                      <button
-                        onClick={() => setSelectedInquiry(inquiry)}
-                        className="text-primary-blue hover:text-blue-700 text-sm"
-                      >
-                        View Details
-                      </button>
-                    </td>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="table-admin">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Service Type</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {inquiries.map((inquiry) => (
+                    <tr key={inquiry._id}>
+                      <td className="font-medium">{inquiry.name}</td>
+                      <td>{inquiry.email}</td>
+                      <td>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          inquiry.serviceType === 'immigration'
+                            ? 'bg-blue-100 text-blue-800'
+                            : 'bg-purple-100 text-purple-800'
+                        }`}>
+                          {inquiry.serviceType}
+                        </span>
+                      </td>
+                      <td>
+                        <select
+                          value={inquiry.status}
+                          onChange={(e) => updateStatus(inquiry._id, e.target.value)}
+                          className={`px-2 py-1 rounded-full text-xs border-0 ${getStatusBadge(inquiry.status)}`}
+                        >
+                          <option value="new">New</option>
+                          <option value="contacted">Contacted</option>
+                          <option value="qualified">Qualified</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                      </td>
+                      <td className="whitespace-nowrap">{formatDate(inquiry.createdAt)}</td>
+                      <td>
+                        <button
+                          onClick={() => setSelectedInquiry(inquiry)}
+                          className="text-primary-blue hover:text-blue-700 text-sm"
+                        >
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-admin-border">
+              {inquiries.map((inquiry) => (
+                <div key={inquiry._id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-text-dark truncate">{inquiry.name}</p>
+                      <p className="text-sm text-text-muted truncate">{inquiry.email}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs flex-shrink-0 ${
+                      inquiry.serviceType === 'immigration'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-purple-100 text-purple-800'
+                    }`}>
+                      {inquiry.serviceType}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <select
+                      value={inquiry.status}
+                      onChange={(e) => updateStatus(inquiry._id, e.target.value)}
+                      className={`px-2 py-1 rounded-full text-xs border-0 ${getStatusBadge(inquiry.status)}`}
+                    >
+                      <option value="new">New</option>
+                      <option value="contacted">Contacted</option>
+                      <option value="qualified">Qualified</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                    <span className="text-xs text-text-muted">{formatDateShort(inquiry.createdAt)}</span>
+                  </div>
+                  <button
+                    onClick={() => setSelectedInquiry(inquiry)}
+                    className="w-full text-center text-primary-blue hover:text-blue-700 text-sm py-2 border border-admin-border rounded-lg"
+                  >
+                    View Details
+                  </button>
+                </div>
+              ))}
+            </div>
 
             {/* Pagination */}
             {pagination.pages > 1 && (
-              <div className="p-4 border-t border-admin-border flex items-center justify-between">
+              <div className="p-4 border-t border-admin-border flex flex-col sm:flex-row items-center justify-between gap-3">
                 <button
                   onClick={() => setFilter({ ...filter, page: filter.page - 1 })}
                   disabled={filter.page === 1}
-                  className="btn-admin-secondary disabled:opacity-50"
+                  className="btn-admin-secondary disabled:opacity-50 w-full sm:w-auto"
                 >
                   Previous
                 </button>
@@ -181,7 +231,7 @@ const InquiriesPage = () => {
                 <button
                   onClick={() => setFilter({ ...filter, page: filter.page + 1 })}
                   disabled={filter.page === pagination.pages}
-                  className="btn-admin-secondary disabled:opacity-50"
+                  className="btn-admin-secondary disabled:opacity-50 w-full sm:w-auto"
                 >
                   Next
                 </button>
@@ -213,7 +263,7 @@ const InquiriesPage = () => {
               </div>
               <div>
                 <label className="label-admin">Email</label>
-                <p className="text-text-dark">{selectedInquiry.email}</p>
+                <p className="text-text-dark break-all">{selectedInquiry.email}</p>
               </div>
               {selectedInquiry.phone && (
                 <div>
@@ -250,16 +300,16 @@ const InquiriesPage = () => {
                 <p className="text-text-dark">{formatDate(selectedInquiry.createdAt)}</p>
               </div>
             </div>
-            <div className="p-4 border-t border-admin-border flex justify-end gap-2">
+            <div className="p-4 border-t border-admin-border flex flex-col sm:flex-row justify-end gap-2">
               <button
                 onClick={() => setSelectedInquiry(null)}
-                className="btn-admin-secondary"
+                className="btn-admin-secondary w-full sm:w-auto"
               >
                 Close
               </button>
               <a
                 href={`mailto:${selectedInquiry.email}`}
-                className="btn-admin-primary"
+                className="btn-admin-primary text-center w-full sm:w-auto"
               >
                 Reply via Email
               </a>

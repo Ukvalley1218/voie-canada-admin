@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import logo from '../assets/footer-logo.png'
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -75,9 +76,20 @@ const AdminLayout = () => {
     }
   ];
 
+  // Get page title based on current route
+  const getPageTitle = () => {
+    const item = menuItems.find(item => isActive(item.path));
+    return item?.label || 'Admin';
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleNavClick = () => {
+    // Close sidebar on mobile when a link is clicked
+    setSidebarOpen(false);
   };
 
   const isActive = (path) => {
@@ -89,11 +101,11 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-admin-sidebar transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between h-16 px-4 bg-admin-sidebarHover">
-          <Link to="/dashboard" className="flex items-center">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary-blue to-primary-red rounded-lg flex items-center justify-center">
-              <span className="text-white font-heading font-bold">V</span>
+          <Link to="/dashboard" className="flex items-center" onClick={handleNavClick}>
+            <div className="h-14 w-auto rounded-lg flex items-center justify-center">
+              <img src={logo} alt="VOIE LOGO" className='w-full h-full'/>
             </div>
-            <span className="ml-2 text-white font-heading font-semibold">Voie Admin</span>
+
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-400 hover:text-white">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,6 +119,7 @@ const AdminLayout = () => {
             <Link
               key={item.path}
               to={item.path}
+              onClick={handleNavClick}
               className={`${isActive(item.path) ? 'sidebar-link-active' : 'sidebar-link'}`}
             >
               {item.icon}
@@ -137,16 +150,6 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="fixed top-4 left-4 z-40 lg:hidden p-2 bg-admin-sidebar text-white rounded-lg"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
-
       {/* Overlay */}
       {sidebarOpen && (
         <div
@@ -157,7 +160,25 @@ const AdminLayout = () => {
 
       {/* Main content */}
       <main className="lg:ml-64 min-h-screen">
-        <div className="p-6">
+        {/* Mobile Header */}
+        <header className="lg:hidden sticky top-0 z-30 bg-white border-b border-admin-border px-4 py-3">
+          <div className="flex items-center">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 -ml-2 text-text-dark hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <h1 className="ml-3 text-lg font-heading font-semibold text-text-dark">
+              {getPageTitle()}
+            </h1>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <div className="p-4 lg:p-6">
           <Outlet />
         </div>
       </main>

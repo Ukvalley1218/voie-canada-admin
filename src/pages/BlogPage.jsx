@@ -142,38 +142,40 @@ const BlogPage = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-heading font-bold text-text-dark">Blog Posts</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h1 className="text-xl lg:text-2xl font-heading font-bold text-text-dark">Blog Posts</h1>
         <button
           onClick={() => { resetForm(); setEditingPost(null); setShowModal(true); }}
-          className="btn-admin-primary"
+          className="btn-admin-primary w-full sm:w-auto"
         >
           Add Post
         </button>
       </div>
 
       {/* Filter */}
-      <div className="card-admin p-4 mb-6 flex gap-4">
-        <select
-          value={filter.category}
-          onChange={(e) => setFilter({ ...filter, category: e.target.value })}
-          className="input-admin w-auto"
-        >
-          <option value="">All Categories</option>
-          <option value="Immigration">Immigration</option>
-          <option value="Education">Education</option>
-          <option value="Settlement">Settlement</option>
-          <option value="General">General</option>
-        </select>
-        <select
-          value={filter.status}
-          onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-          className="input-admin w-auto"
-        >
-          <option value="">All Status</option>
-          <option value="published">Published</option>
-          <option value="draft">Draft</option>
-        </select>
+      <div className="card-admin p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <select
+            value={filter.category}
+            onChange={(e) => setFilter({ ...filter, category: e.target.value })}
+            className="input-admin w-full sm:w-auto"
+          >
+            <option value="">All Categories</option>
+            <option value="Immigration">Immigration</option>
+            <option value="Education">Education</option>
+            <option value="Settlement">Settlement</option>
+            <option value="General">General</option>
+          </select>
+          <select
+            value={filter.status}
+            onChange={(e) => setFilter({ ...filter, status: e.target.value })}
+            className="input-admin w-full sm:w-auto"
+          >
+            <option value="">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
       </div>
 
       {/* Posts List */}
@@ -184,58 +186,60 @@ const BlogPage = () => {
       ) : (
         <div className="space-y-4">
           {posts.map((post) => (
-            <div key={post._id} className="card-admin p-4 flex items-start gap-4">
-              {post.featuredImage && (
-                <img
-                  src={post.featuredImage}
-                  alt={post.title}
-                  className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
-                />
-              )}
-              <div className="flex-grow">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        post.isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {post.isPublished ? 'Published' : 'Draft'}
-                      </span>
-                      <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                        {post.category}
-                      </span>
+            <div key={post._id} className="card-admin p-4">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                {post.featuredImage && (
+                  <img
+                    src={post.featuredImage}
+                    alt={post.title}
+                    className="w-full sm:w-24 h-32 sm:h-24 object-cover rounded-lg flex-shrink-0"
+                  />
+                )}
+                <div className="flex-grow">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                    <div>
+                      <div className="flex items-center flex-wrap gap-2 mb-1">
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          post.isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {post.isPublished ? 'Published' : 'Draft'}
+                        </span>
+                        <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                          {post.category}
+                        </span>
+                      </div>
+                      <h3 className="font-heading font-semibold text-text-dark">{post.title}</h3>
                     </div>
-                    <h3 className="font-heading font-semibold text-text-dark">{post.title}</h3>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => handleEdit(post)}
+                        className="text-primary-blue hover:text-blue-700 text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => togglePublish(post)}
+                        className="text-yellow-600 hover:text-yellow-700 text-sm"
+                      >
+                        {post.isPublished ? 'Unpublish' : 'Publish'}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post._id)}
+                        className="text-red-600 hover:text-red-700 text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <button
-                      onClick={() => handleEdit(post)}
-                      className="text-primary-blue hover:text-blue-700 text-sm"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => togglePublish(post)}
-                      className="text-yellow-600 hover:text-yellow-700 text-sm"
-                    >
-                      {post.isPublished ? 'Unpublish' : 'Publish'}
-                    </button>
-                    <button
-                      onClick={() => handleDelete(post._id)}
-                      className="text-red-600 hover:text-red-700 text-sm"
-                    >
-                      Delete
-                    </button>
+                  <p className="text-sm text-text-muted line-clamp-2 mb-2">{post.excerpt}</p>
+                  <div className="text-xs text-text-muted flex flex-wrap gap-x-4">
+                    {post.publishedAt && (
+                      <span>Published: {formatDate(post.publishedAt)}</span>
+                    )}
+                    {post.author && (
+                      <span>By: {post.author}</span>
+                    )}
                   </div>
-                </div>
-                <p className="text-sm text-text-muted line-clamp-2 mb-2">{post.excerpt}</p>
-                <div className="text-xs text-text-muted">
-                  {post.publishedAt && (
-                    <span>Published: {formatDate(post.publishedAt)}</span>
-                  )}
-                  {post.author && (
-                    <span className="ml-4">By: {post.author}</span>
-                  )}
                 </div>
               </div>
             </div>
@@ -306,7 +310,7 @@ const BlogPage = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="label-admin">Category *</label>
                   <select
@@ -336,7 +340,7 @@ const BlogPage = () => {
               <div>
                 <label className="label-admin">Tags</label>
                 {formData.tags.map((tag, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
+                  <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
                     <input
                       type="text"
                       value={tag}
@@ -347,7 +351,7 @@ const BlogPage = () => {
                     <button
                       type="button"
                       onClick={() => removeTag(index)}
-                      className="text-red-600 hover:text-red-700"
+                      className="text-red-600 hover:text-red-700 text-sm"
                     >
                       Remove
                     </button>
@@ -373,11 +377,11 @@ const BlogPage = () => {
                 <label htmlFor="isPublished" className="text-sm text-text-dark">Publish immediately</label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-admin-border">
-                <button type="button" onClick={() => setShowModal(false)} className="btn-admin-secondary">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-admin-border">
+                <button type="button" onClick={() => setShowModal(false)} className="btn-admin-secondary w-full sm:w-auto">
                   Cancel
                 </button>
-                <button type="submit" className="btn-admin-primary">
+                <button type="submit" className="btn-admin-primary w-full sm:w-auto">
                   {editingPost ? 'Update Post' : 'Create Post'}
                 </button>
               </div>

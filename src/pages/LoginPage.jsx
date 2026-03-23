@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext.jsx';
+import logo from '../assets/logo.png'
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -32,13 +33,10 @@ const LoginPage = () => {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-blue to-primary-red rounded-lg flex items-center justify-center">
-              <span className="text-white font-heading font-bold text-2xl">V</span>
+            <div className="w-auto h-4  flex items-center justify-center">
+             <img src={logo} alt="VOIE LOGO" />
             </div>
-            <div className="ml-3">
-              <span className="font-heading font-bold text-2xl text-primary-blue">Voie</span>
-              <span className="font-heading font-bold text-2xl text-primary-red ml-1">Canada</span>
-            </div>
+           
           </div>
           <h1 className="mt-4 text-xl font-heading font-semibold text-text-dark">Admin Panel</h1>
         </div>
