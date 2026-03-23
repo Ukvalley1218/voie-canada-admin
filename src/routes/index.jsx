@@ -9,6 +9,7 @@ import SettingsPage from '../pages/SettingsPage.jsx';
 import TestimonialsPage from '../pages/TestimonialsPage.jsx';
 import BlogPage from '../pages/BlogPage.jsx';
 import ResourcesPage from '../pages/ResourcesPage.jsx';
+import TeamPage from '../pages/TeamPage.jsx';
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -74,6 +75,7 @@ const router = createBrowserRouter(
         <Route path="blog" element={<BlogPage />} />
         <Route path="testimonials" element={<TestimonialsPage />} />
         <Route path="resources" element={<ResourcesPage />} />
+        <Route path="team" element={<TeamPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </>

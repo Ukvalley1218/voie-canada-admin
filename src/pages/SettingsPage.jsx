@@ -30,7 +30,7 @@ const SettingsPage = () => {
       headline: '',
       description: '',
       points: [],
-      imagurl: ''
+      image: ''
     },
     faqs: [],
     contact: {
@@ -674,13 +674,13 @@ const SettingsPage = () => {
                   <label className="label-admin">Section Image URL</label>
                   <input
                     type="text"
-                    value={settings.differentiator?.imagurl || ''}
-                    onChange={(e) => handleInputChange('differentiator.imagurl', e.target.value)}
+                    value={settings.differentiator?.image || ''}
+                    onChange={(e) => handleInputChange('differentiator.image', e.target.value)}
                     className="input-admin"
                     placeholder="https://images.unsplash.com/..."
                   />
-                  {settings.differentiator?.imagurl && (
-                    <img src={settings.differentiator.imagurl} alt="Preview" className="mt-2 w-48 h-32 object-cover rounded" />
+                  {settings.differentiator?.image && (
+                    <img src={settings.differentiator.image} alt="Preview" className="mt-2 w-48 h-32 object-cover rounded" />
                   )}
                 </div>
                 {/* Points */}
