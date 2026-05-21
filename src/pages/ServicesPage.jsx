@@ -31,7 +31,8 @@ const ServicesPage = () => {
     try {
       const params = new URLSearchParams();
       if (filter.category) params.append('category', filter.category);
-      // Admin sees all services, including inactive
+      // Admin sees all services (including inactive) by using all=true
+      params.append('all', 'true');
       const response = await api.get(`/services?${params}`);
       setServices(response.data || []);
     } catch (error) {
@@ -96,10 +97,16 @@ const ServicesPage = () => {
 
   const toggleActive = async (service) => {
     try {
-      await api.put(`/services/${service._id}`, { isActive: !service.isActive });
-      fetchServices();
+      await api.patch(`/services/${service._id}/toggle-status`);
+      // Update local state without full page reload
+      setServices(prev => prev.map(s =>
+        s._id === service._id
+          ? { ...s, isActive: !s.isActive }
+          : s
+      ));
     } catch (error) {
       console.error('Error toggling active:', error);
+      alert('Failed to update service status. Please try again.');
     }
   };
 

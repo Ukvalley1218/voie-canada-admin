@@ -26,7 +26,8 @@ const TeamPage = () => {
   const fetchTeamMembers = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/team');
+      // Admin sees all team members (including inactive) by using all=true
+      const response = await api.get('/team?all=true');
       setTeamMembers(response.data || []);
     } catch (error) {
       console.error('Error fetching team members:', error);
@@ -81,10 +82,16 @@ const TeamPage = () => {
 
   const toggleActive = async (member) => {
     try {
-      await api.put(`/team/${member._id}`, { isActive: !member.isActive });
-      fetchTeamMembers();
+      await api.patch(`/team/${member._id}/toggle-status`);
+      // Update local state without full page reload
+      setTeamMembers(prev => prev.map(m =>
+        m._id === member._id
+          ? { ...m, isActive: !m.isActive }
+          : m
+      ));
     } catch (error) {
       console.error('Error toggling active:', error);
+      alert('Failed to update team member status. Please try again.');
     }
   };
 

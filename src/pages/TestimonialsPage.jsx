@@ -7,6 +7,8 @@ const TestimonialsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingTestimonial, setEditingTestimonial] = useState(null);
   const [filter, setFilter] = useState({ category: '' });
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -29,7 +31,8 @@ const TestimonialsPage = () => {
     try {
       const params = new URLSearchParams();
       if (filter.category) params.append('category', filter.category);
-      // Admin sees all testimonials
+      // Admin sees all testimonials (including inactive) by using all=true
+      params.append('all', 'true');
       const response = await api.get(`/testimonials?${params}`);
       setTestimonials(response.data || []);
     } catch (error) {
@@ -85,10 +88,16 @@ const TestimonialsPage = () => {
 
   const toggleActive = async (testimonial) => {
     try {
-      await api.put(`/testimonials/${testimonial._id}`, { isActive: !testimonial.isActive });
-      fetchTestimonials();
+      const response = await api.patch(`/testimonials/${testimonial._id}/toggle-status`);
+      // Update local state without full page reload
+      setTestimonials(prev => prev.map(t =>
+        t._id === testimonial._id
+          ? { ...t, isActive: !t.isActive }
+          : t
+      ));
     } catch (error) {
       console.error('Error toggling active:', error);
+      alert('Failed to update testimonial status. Please try again.');
     }
   };
 
@@ -160,12 +169,11 @@ const TestimonialsPage = () => {
             <div key={testimonial._id} className="card-admin p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    testimonial.category === 'professional' ? 'bg-blue-100 text-blue-800' :
+                  <span className={`px-2 py-1 rounded-full text-xs ${testimonial.category === 'professional' ? 'bg-blue-100 text-blue-800' :
                     testimonial.category === 'entrepreneur' ? 'bg-green-100 text-green-800' :
-                    testimonial.category === 'student' ? 'bg-purple-100 text-purple-800' :
-                    'bg-orange-100 text-orange-800'
-                  }`}>
+                      testimonial.category === 'student' ? 'bg-purple-100 text-purple-800' :
+                        'bg-orange-100 text-orange-800'
+                    }`}>
                     {categoryLabels[testimonial.category] || testimonial.category}
                   </span>
                   {testimonial.isFeatured && (
@@ -174,9 +182,8 @@ const TestimonialsPage = () => {
                     </span>
                   )}
                 </div>
-                <span className={`px-2 py-1 rounded-full text-xs ${
-                  testimonial.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                }`}>
+                <span className={`px-2 py-1 rounded-full text-xs ${testimonial.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
                   {testimonial.isActive ? 'Active' : 'Inactive'}
                 </span>
               </div>
@@ -201,12 +208,7 @@ const TestimonialsPage = () => {
                   Edit
                 </button>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => toggleFeatured(testimonial)}
-                    className={`text-sm ${testimonial.isFeatured ? 'text-yellow-600' : 'text-gray-400'}`}
-                  >
-                    {testimonial.isFeatured ? 'Unfeature' : 'Feature'}
-                  </button>
+
                   <button
                     onClick={() => toggleActive(testimonial)}
                     className="text-yellow-600 hover:text-yellow-700 text-sm"
@@ -290,25 +292,96 @@ const TestimonialsPage = () => {
               </div>
 
               <div>
-                <label className="label-admin">Photo URL</label>
+                <label className="label-admin">Photo</label>
                 <input
-                  type="text"
-                  value={formData.photo}
-                  onChange={(e) => setFormData({ ...formData, photo: e.target.value })}
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingPhoto}
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    setUploadingPhoto(true);
+                    const data = new FormData();
+                    data.append('image', file);
+
+                    try {
+                      const response = await api.post('/upload/image', data, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                      });
+
+                      if (response && response.url) {
+                        setFormData({ ...formData, photo: response.url });
+                      } else {
+                        alert('Upload failed: No URL returned from server');
+                      }
+                    } catch (error) {
+                      console.error('Photo upload error:', error);
+                      alert('Photo upload failed: ' + (error.message || 'Please try again.'));
+                    } finally {
+                      setUploadingPhoto(false);
+                    }
+                  }}
                   className="input-admin"
-                  placeholder="https://example.com/photo.jpg"
                 />
+                {uploadingPhoto && (
+                  <p className="text-xs text-blue-600 mt-1">Uploading photo...</p>
+                )}
+                {formData.photo && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <img
+                      src={formData.photo}
+                      alt="Preview"
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <a href={formData.photo} target="_blank" rel="noreferrer" className="text-xs text-primary-blue underline">
+                      View Image
+                    </a>
+                  </div>
+                )}
               </div>
 
               <div>
-                <label className="label-admin">Video URL (optional)</label>
+                <label className="label-admin">Video (optional)</label>
                 <input
-                  type="text"
-                  value={formData.videoUrl}
-                  onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                  type="file"
+                  accept="video/*"
+                  disabled={uploadingVideo}
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    setUploadingVideo(true);
+                    const data = new FormData();
+                    data.append('video', file);
+
+                    try {
+                      const response = await api.post('/upload/video', data, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                      });
+
+                      if (response && response.url) {
+                        setFormData({ ...formData, videoUrl: response.url });
+                      } else {
+                        alert('Upload failed: No URL returned from server');
+                      }
+                    } catch (error) {
+                      console.error('Video upload error:', error);
+                      alert('Video upload failed: ' + (error.message || 'Please try again.'));
+                    } finally {
+                      setUploadingVideo(false);
+                    }
+                  }}
                   className="input-admin"
-                  placeholder="https://youtube.com/..."
                 />
+                {uploadingVideo && (
+                  <p className="text-xs text-blue-600 mt-1">Uploading video...</p>
+                )}
+                {formData.videoUrl && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ Video uploaded: <a href={formData.videoUrl} target="_blank" rel="noreferrer" className="underline">View Video</a>
+                  </p>
+                )}
               </div>
 
               <div>

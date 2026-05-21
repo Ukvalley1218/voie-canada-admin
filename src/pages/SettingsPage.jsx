@@ -179,11 +179,10 @@ const SettingsPage = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`whitespace-nowrap text-left px-4 py-2 rounded-lg text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-primary-blue text-white'
-                      : 'text-text-muted hover:bg-secondary-gray'
-                  }`}
+                  className={`whitespace-nowrap text-left px-4 py-2 rounded-lg text-sm transition-colors ${activeTab === tab.id
+                    ? 'bg-primary-blue text-white'
+                    : 'text-text-muted hover:bg-secondary-gray'
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -281,49 +280,7 @@ const SettingsPage = () => {
                   )}
                 </div>
 
-                {/* Overlay Settings */}
-                <div className="bg-secondary-gray rounded-lg p-4">
-                  <h3 className="font-medium mb-3">Overlay Settings</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="label-admin">Overlay Opacity (0-1)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.05"
-                        value={settings.hero?.overlayOpacity ?? 0.75}
-                        onChange={(e) => handleInputChange('hero.overlayOpacity', parseFloat(e.target.value))}
-                        className="input-admin"
-                      />
-                    </div>
-                    <div>
-                      <label className="label-admin">Overlay Direction</label>
-                      <select
-                        value={settings.hero?.overlayDirection || 'left'}
-                        onChange={(e) => handleInputChange('hero.overlayDirection', e.target.value)}
-                        className="input-admin bg-white"
-                      >
-                        <option value="left">Left (Text on Left)</option>
-                        <option value="right">Right (Text on Right)</option>
-                        <option value="bottom">Bottom (Text on Top)</option>
-                        <option value="full">Full (Even Overlay)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <label className="label-admin">Text Position</label>
-                    <select
-                      value={settings.hero?.textPosition || 'left'}
-                      onChange={(e) => handleInputChange('hero.textPosition', e.target.value)}
-                      className="input-admin bg-white"
-                    >
-                      <option value="left">Left</option>
-                      <option value="center">Center</option>
-                      <option value="right">Right</option>
-                    </select>
-                  </div>
-                </div>
+
 
                 {/* CTA Buttons */}
                 <div className="grid grid-cols-2 gap-4">
@@ -621,7 +578,7 @@ const SettingsPage = () => {
                   </div>
                 ))}
 
-                <button
+                {/* <button
                   onClick={() => {
                     const newFaqs = [...(settings.faqs || []), {
                       question: '',
@@ -633,7 +590,27 @@ const SettingsPage = () => {
                   className="text-primary-blue hover:text-blue-700"
                 >
                   + Add FAQ
-                </button>
+                </button> */}
+                {/* Replace your current "+ Add FAQ" button with this */}
+                {(settings.faqs || []).length < 6 ? (
+                  <button
+                    onClick={() => {
+                      const newFaqs = [...(settings.faqs || []), {
+                        question: '',
+                        answer: '',
+                        category: 'general'
+                      }];
+                      handleInputChange('faqs', newFaqs);
+                    }}
+                    className="text-primary-blue hover:text-blue-700"
+                  >
+                    + Add FAQ
+                  </button>
+                ) : (
+                  <p className="text-sm text-text-muted italic">
+                    Maximum 6 FAQs allowed.
+                  </p>
+                )}
               </div>
             )}
 

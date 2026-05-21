@@ -7,12 +7,13 @@ const ResourcesPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
   const [filter, setFilter] = useState({ category: '' });
+  const [uploading, setUploading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'PDF Guide',
-    category: 'Immigration',
+    type: 'guide',
+    category: 'immigration',
     fileUrl: '',
     externalUrl: '',
     isFeatured: false,
@@ -28,6 +29,8 @@ const ResourcesPage = () => {
     try {
       const params = new URLSearchParams();
       if (filter.category) params.append('category', filter.category);
+      // Admin sees all resources (including inactive) by using all=true
+      params.append('all', 'true');
       const response = await api.get(`/resources?${params}`);
       setResources(response.data || []);
     } catch (error) {
@@ -39,6 +42,16 @@ const ResourcesPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Log form data for debugging
+    console.log('Submitting resource with data:', formData);
+    console.log('fileUrl value:', formData.fileUrl);
+
+    if (!formData.fileUrl) {
+      alert('Please upload a file before submitting.');
+      return;
+    }
+
     try {
       if (editingResource) {
         await api.put(`/resources/${editingResource._id}`, formData);
@@ -52,6 +65,8 @@ const ResourcesPage = () => {
       fetchResources();
     } catch (error) {
       console.error('Error saving resource:', error);
+      console.error('Error response:', error.response?.data);
+      alert(error.response?.data?.message || 'Failed to save resource. Please check the form data.');
     }
   };
 
@@ -60,8 +75,8 @@ const ResourcesPage = () => {
     setFormData({
       title: resource.title || '',
       description: resource.description || '',
-      type: resource.type || 'PDF Guide',
-      category: resource.category || 'Immigration',
+      type: resource.type || 'guide',
+      category: resource.category || 'immigration',
       fileUrl: resource.fileUrl || '',
       externalUrl: resource.externalUrl || '',
       isFeatured: resource.isFeatured || false,
@@ -82,19 +97,31 @@ const ResourcesPage = () => {
 
   const toggleActive = async (resource) => {
     try {
-      await api.put(`/resources/${resource._id}`, { isActive: !resource.isActive });
-      fetchResources();
+      await api.patch(`/resources/${resource._id}/toggle-status`);
+      // Update local state without full page reload
+      setResources(prev => prev.map(r =>
+        r._id === resource._id
+          ? { ...r, isActive: !r.isActive }
+          : r
+      ));
     } catch (error) {
       console.error('Error toggling active:', error);
+      alert('Failed to update resource status. Please try again.');
     }
   };
 
   const toggleFeatured = async (resource) => {
     try {
-      await api.put(`/resources/${resource._id}`, { isFeatured: !resource.isFeatured });
-      fetchResources();
+      await api.patch(`/resources/${resource._id}/toggle-featured`);
+      // Update local state without full page reload
+      setResources(prev => prev.map(r =>
+        r._id === resource._id
+          ? { ...r, isFeatured: !r.isFeatured }
+          : r
+      ));
     } catch (error) {
       console.error('Error toggling featured:', error);
+      alert('Failed to update featured status. Please try again.');
     }
   };
 
@@ -102,8 +129,8 @@ const ResourcesPage = () => {
     setFormData({
       title: '',
       description: '',
-      type: 'PDF Guide',
-      category: 'Immigration',
+      type: 'guide',
+      category: 'immigration',
       fileUrl: '',
       externalUrl: '',
       isFeatured: false,
@@ -111,19 +138,20 @@ const ResourcesPage = () => {
     });
   };
 
+  // Type labels matching backend enum
   const typeLabels = {
-    'PDF Guide': 'PDF Guide',
-    'Video': 'Video',
-    'Article': 'Article',
-    'Tool': 'Tool',
-    'Checklist': 'Checklist'
+    'guide': 'PDF Guide',
+    'ebook': 'eBook',
+    'checklist': 'Checklist',
+    'template': 'Template',
+    'other': 'Other'
   };
 
+  // Category labels matching backend enum
   const categoryLabels = {
-    'Immigration': 'Immigration',
-    'Education': 'Education',
-    'Settlement': 'Settlement',
-    'General': 'General'
+    'immigration': 'Immigration',
+    'education': 'Education',
+    'general': 'General'
   };
 
   return (
@@ -146,10 +174,9 @@ const ResourcesPage = () => {
           className="input-admin w-auto"
         >
           <option value="">All Categories</option>
-          <option value="Immigration">Immigration</option>
-          <option value="Education">Education</option>
-          <option value="Settlement">Settlement</option>
-          <option value="General">General</option>
+          <option value="immigration">Immigration</option>
+          <option value="education">Education</option>
+          <option value="general">General</option>
         </select>
       </div>
 
@@ -164,24 +191,23 @@ const ResourcesPage = () => {
             <div key={resource._id} className="card-admin p-4">
               <div className="flex items-start justify-between mb-3">
                 <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                  {resource.type}
+                  {typeLabels[resource.type] || resource.type}
                 </span>
                 <div className="flex gap-1">
-                  {resource.isFeatured && (
+                  {/* {resource.isFeatured && (
                     <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
                       Featured
                     </span>
-                  )}
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    resource.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
+                  )} */}
+                  <span className={`px-2 py-1 rounded-full text-xs ${resource.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
                     {resource.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
               </div>
 
               <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700 mb-2 inline-block">
-                {resource.category}
+                {categoryLabels[resource.category] || resource.category}
               </span>
 
               <h3 className="font-heading font-semibold text-text-dark mb-2">{resource.title}</h3>
@@ -201,12 +227,12 @@ const ResourcesPage = () => {
                   Edit
                 </button>
                 <div className="flex gap-2">
-                  <button
+                  {/* <button
                     onClick={() => toggleFeatured(resource)}
                     className={`text-sm ${resource.isFeatured ? 'text-yellow-600' : 'text-gray-400'}`}
                   >
                     {resource.isFeatured ? 'Unfeature' : 'Feature'}
-                  </button>
+                  </button> */}
                   <button
                     onClick={() => toggleActive(resource)}
                     className="text-yellow-600 hover:text-yellow-700 text-sm"
@@ -274,11 +300,11 @@ const ResourcesPage = () => {
                     className="input-admin"
                     required
                   >
-                    <option value="PDF Guide">PDF Guide</option>
-                    <option value="Video">Video</option>
-                    <option value="Article">Article</option>
-                    <option value="Tool">Tool</option>
-                    <option value="Checklist">Checklist</option>
+                    <option value="guide">PDF Guide</option>
+                    <option value="ebook">eBook</option>
+                    <option value="checklist">Checklist</option>
+                    <option value="template">Template</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
                 <div>
@@ -289,27 +315,27 @@ const ResourcesPage = () => {
                     className="input-admin"
                     required
                   >
-                    <option value="Immigration">Immigration</option>
-                    <option value="Education">Education</option>
-                    <option value="Settlement">Settlement</option>
-                    <option value="General">General</option>
+                    <option value="immigration">Immigration</option>
+                    <option value="education">Education</option>
+                    <option value="general">General</option>
                   </select>
                 </div>
               </div>
 
-              <div>
-                <label className="label-admin">File URL</label>
+              {/* <div>
+                <label className="label-admin">File URL *</label>
                 <input
                   type="text"
                   value={formData.fileUrl}
                   onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
                   className="input-admin"
                   placeholder="https://example.com/file.pdf"
+                  required
                 />
               </div>
 
               <div>
-                <label className="label-admin">External URL</label>
+                <label className="label-admin">External URL (optional)</label>
                 <input
                   type="text"
                   value={formData.externalUrl}
@@ -317,7 +343,56 @@ const ResourcesPage = () => {
                   className="input-admin"
                   placeholder="https://external-link.com"
                 />
+              </div> */}
+
+              <div>
+                <label className="label-admin">File Upload *</label>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  disabled={uploading}
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    setUploading(true);
+                    const data = new FormData();
+                    data.append('document', file);
+
+                    try {
+                      const response = await api.post('/upload/document', data, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                      });
+                      console.log('Upload response:', response);
+
+                      if (response && response.url) {
+                        setFormData({ ...formData, fileUrl: response.url });
+                        alert('File uploaded successfully!');
+                      } else {
+                        console.error('No URL in response:', response);
+                        alert('Upload failed: No URL returned from server');
+                      }
+                    } catch (error) {
+                      console.error('File upload error:', error);
+                      alert('File upload failed: ' + (error.message || 'Please try again.'));
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
+                  className="input-admin"
+                  required={!formData.fileUrl}
+                />
+                {uploading && (
+                  <p className="text-xs text-blue-600 mt-1">Uploading file, please wait...</p>
+                )}
+                {formData.fileUrl && (
+                  <p className="text-xs text-green-600 mt-1">
+                    ✓ File uploaded: <a href={formData.fileUrl} target="_blank" rel="noreferrer" className="underline">View file</a>
+                  </p>
+                )}
               </div>
+
+
 
               <div className="flex items-center gap-4">
                 <label className="flex items-center gap-2">

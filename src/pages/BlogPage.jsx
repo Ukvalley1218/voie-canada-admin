@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 
+// Static categories for blog posts
+const categoryLabels = {
+  'Immigration': 'Immigration',
+  'Education': 'Education',
+  'Settlement': 'Settlement',
+  'General': 'General'
+};
+
 const BlogPage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [filter, setFilter] = useState({ category: '', status: '' });
+  const [availableTags, setAvailableTags] = useState([]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -23,12 +32,26 @@ const BlogPage = () => {
     fetchPosts();
   }, [filter]);
 
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const tagRes = await api.get('/tags');
+        setAvailableTags(tagRes.data || []);
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+      }
+    };
+    fetchTags();
+  }, []);
+
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (filter.category) params.append('category', filter.category);
-      // Admin sees all posts (including drafts)
+      if (filter.status) params.append('status', filter.status);
+      // Admin sees all posts (including drafts) by using all=true
+      params.append('all', 'true');
       const response = await api.get(`/blog?${params}`);
       setPosts(response.data || []);
     } catch (error) {
@@ -59,6 +82,7 @@ const BlogPage = () => {
       fetchPosts();
     } catch (error) {
       console.error('Error saving post:', error);
+      alert(error?.response?.data?.message || 'Failed to save post');
     }
   };
 
@@ -70,7 +94,7 @@ const BlogPage = () => {
       excerpt: post.excerpt || '',
       content: post.content || '',
       category: post.category || 'Immigration',
-      tags: post.tags || [],
+      tags: (post.tags || []).map(t => t?._id || t),
       featuredImage: post.featuredImage || '',
       isPublished: post.isPublished || false
     });
@@ -89,10 +113,16 @@ const BlogPage = () => {
 
   const togglePublish = async (post) => {
     try {
-      await api.put(`/blog/${post._id}`, { isPublished: !post.isPublished });
-      fetchPosts();
+      await api.patch(`/blog/${post._id}/toggle-status`);
+      // Update local state without full page reload
+      setPosts(prev => prev.map(p =>
+        p._id === post._id
+          ? { ...p, isPublished: !p.isPublished }
+          : p
+      ));
     } catch (error) {
       console.error('Error toggling publish:', error);
+      alert('Failed to update blog status. Please try again.');
     }
   };
 
@@ -124,6 +154,15 @@ const BlogPage = () => {
     setFormData({ ...formData, tags: newTags.length ? newTags : [] });
   };
 
+  const toggleTag = (tagId) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tagId)
+        ? prev.tags.filter(t => t !== tagId)
+        : [...prev.tags, tagId]
+    }));
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -131,13 +170,6 @@ const BlogPage = () => {
       month: 'short',
       day: 'numeric'
     });
-  };
-
-  const categoryLabels = {
-    'Immigration': 'Immigration',
-    'Education': 'Education',
-    'Settlement': 'Settlement',
-    'General': 'General'
   };
 
   return (
@@ -199,9 +231,8 @@ const BlogPage = () => {
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                     <div>
                       <div className="flex items-center flex-wrap gap-2 mb-1">
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          post.isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span className={`px-2 py-1 rounded-full text-xs ${post.isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
                           {post.isPublished ? 'Published' : 'Draft'}
                         </span>
                         <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
@@ -319,10 +350,9 @@ const BlogPage = () => {
                     className="input-admin"
                     required
                   >
-                    <option value="Immigration">Immigration</option>
-                    <option value="Education">Education</option>
-                    <option value="Settlement">Settlement</option>
-                    <option value="General">General</option>
+                    {Object.entries(categoryLabels).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
@@ -339,31 +369,20 @@ const BlogPage = () => {
 
               <div>
                 <label className="label-admin">Tags</label>
-                {formData.tags.map((tag, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={tag}
-                      onChange={(e) => updateTag(index, e.target.value)}
-                      className="input-admin flex-1"
-                      placeholder="Enter tag"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeTag(index)}
-                      className="text-red-600 hover:text-red-700 text-sm"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addTag}
-                  className="text-primary-blue hover:text-blue-700 text-sm"
-                >
-                  + Add Tag
-                </button>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {availableTags.map(tag => (
+                    <label key={tag._id}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm cursor-pointer border transition-colors ${formData.tags.includes(tag._id)
+                        ? 'bg-blue-100 border-blue-400 text-blue-800'
+                        : 'bg-gray-100 border-gray-300 text-gray-700'
+                        }`}>
+                      <input type="checkbox" className="hidden"
+                        checked={formData.tags.includes(tag._id)}
+                        onChange={() => toggleTag(tag._id)} />
+                      {tag.name}
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
